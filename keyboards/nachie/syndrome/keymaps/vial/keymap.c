@@ -91,6 +91,47 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         }
     #endif
 
+    #ifdef DYNAMIC_MACRO_ENABLE
+        //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
+        void render_dynamic_macro_status(int8_t direction,char string[]){
+            oled_set_cursor(8,4);
+            oled_write(PSTR(string), false);
+        }
+
+        void dynamic_macro_record_start_user(int8_t direction){
+            switch(direction){
+                case 0:
+                    render_dynamic_macro_status(direction,"No Dyn Macros");
+                    break;
+                case 1:
+                    render_dynamic_macro_status(direction,"Macro 1 REC");
+                    break;
+                case -1:
+                    render_dynamic_macro_status(direction,"Macro 2 REC");
+                    break;
+                default:
+                    render_dynamic_macro_status(0,"Macro ?");
+            }
+        }
+
+        void dynamic_macro_record_end_user(int8_t direction){
+            switch(direction){
+                case 0:
+                    render_dynamic_macro_status(direction,"No Dyn Macros");
+                    break;
+                case 1:
+                    render_dynamic_macro_status(direction,"Macro 1 SET");
+                    break;
+                case -1:
+                    render_dynamic_macro_status(direction,"Macro 2 SET");
+                    break;
+                default:
+                    render_dynamic_macro_status(0,"Macro ?");
+            }
+        }
+
+    #endif
+
     bool clear_screen = false;
 
     static void render_logo(void) {
