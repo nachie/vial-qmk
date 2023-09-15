@@ -94,6 +94,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     #ifdef DYNAMIC_MACRO_ENABLE
         bool macro1;
         bool macro2;
+        bool prevEnabled;
+        uint8_t prevRGBmode;
 
         void render_dynamic_macro_status(){
             oled_set_cursor(1,2);
@@ -104,7 +106,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
         //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
         void dynamic_macro_record_start_user(int8_t direction){
-            dynamic_macro_led_blink();
+            bool prevEnabled = rgb_matrix_is_enabled();
+            if (!prevEnabled) { rgb_matrix_enable(); }
+            prevRGBmode = rgb_matrix_get_mode();
+            rgb_matrix_mode(RGB_MATRIX_BREATHING);
             switch(direction){
                 case 1:
                     macro1 = false;
@@ -120,6 +125,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         }
 
         void dynamic_macro_record_end_user(int8_t direction){
+            prevEnabled ? rgb_matrix_mode(prevRGBmode) : rgb_matrix_disable();
             switch(direction){
                 case 1:
                     macro1 = true;
