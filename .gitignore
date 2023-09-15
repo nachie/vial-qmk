@@ -49,6 +49,7 @@ quantum/version.h
 .idea/
 .project
 .settings/
+.vscode/
 
 # ?
 .dep
