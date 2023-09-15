@@ -80,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #ifdef OLED_ENABLE
     #ifdef BOOTMAGIC_ENABLE
-        int bootmagic_status = _MAC;
+        int bootmagic_status;
 
         int get_bootmagic_status(){
             return bootmagic_status;
@@ -92,44 +92,47 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     #endif
 
     #ifdef DYNAMIC_MACRO_ENABLE
-        //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
-        void render_dynamic_macro_status(int8_t direction,char string[]){
-            oled_set_cursor(8,4);
-            oled_write(PSTR(string), false);
+        bool macro1;
+        bool macro2;
+
+        void render_dynamic_macro_status(){
+            oled_set_cursor(1,2);
+            oled_write(PSTR("Macro1"), macro1);
+            oled_set_cursor(1,3);
+            oled_write(PSTR("Macro2"), macro2);
         }
 
+        //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
         void dynamic_macro_record_start_user(int8_t direction){
+            dynamic_macro_led_blink();
             switch(direction){
-                case 0:
-                    render_dynamic_macro_status(direction,"No Dyn Macros");
-                    break;
                 case 1:
-                    render_dynamic_macro_status(direction,"Macro 1 REC");
+                    macro1 = false;
                     break;
                 case -1:
-                    render_dynamic_macro_status(direction,"Macro 2 REC");
+                    macro2 = false;
                     break;
                 default:
-                    render_dynamic_macro_status(0,"Macro ?");
+                    macro1 = false;
+                    macro2 = false;
+                    break;
             }
         }
 
         void dynamic_macro_record_end_user(int8_t direction){
             switch(direction){
-                case 0:
-                    render_dynamic_macro_status(direction,"No Dyn Macros");
-                    break;
                 case 1:
-                    render_dynamic_macro_status(direction,"Macro 1 SET");
+                    macro1 = true;
                     break;
                 case -1:
-                    render_dynamic_macro_status(direction,"Macro 2 SET");
+                    macro2 = true;
                     break;
                 default:
-                    render_dynamic_macro_status(0,"Macro ?");
+                    macro1 = false;
+                    macro2 = false;
+                    break;
             }
         }
-
     #endif
 
     bool clear_screen = false;
@@ -256,6 +259,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         render_current_wpm();
         #ifdef BOOTMAGIC_ENABLE
             render_bootmagic_status(20,2);
+        #endif
+        oled_set_cursor(8,2);
+        #ifdef DYNAMIC_MACRO_ENABLE
+            render_dynamic_macro_status();
         #endif
     }
 
