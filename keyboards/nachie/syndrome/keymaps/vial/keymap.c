@@ -106,7 +106,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
         //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
         void dynamic_macro_record_start_user(int8_t direction){
-            bool prevEnabled = rgb_matrix_is_enabled();
+            prevEnabled = rgb_matrix_is_enabled();
             if (!prevEnabled) { rgb_matrix_enable(); }
             prevRGBmode = rgb_matrix_get_mode();
             rgb_matrix_mode(RGB_MATRIX_BREATHING);
