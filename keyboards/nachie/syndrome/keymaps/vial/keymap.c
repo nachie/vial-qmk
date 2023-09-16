@@ -17,19 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 
 #include <stdio.h>
+#include "os_detection.h"
+#include "magic.h"
 
 enum layer_names {
     _BASE, // Default Layer
     _FN, // Fn Layer 1
     _FN2, // Fn Layer 2
     _FN3 // Fn Layer 3
-};
-
-enum bootmagic_platform {
-    _ANDROID,
-    _LINUX,
-    _WINDOWS,
-    _MAC,
 };
 
 #ifndef HAPTIC_ENABLE
@@ -79,29 +74,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #endif
 
 #ifdef OLED_ENABLE
-    #ifdef BOOTMAGIC_ENABLE
-        int bootmagic_status;
-
-        int get_bootmagic_status(){
-            return bootmagic_status;
-        }
-
-        void set_bootmagic_status(int status){
-            bootmagic_status = status;
-        }
-    #endif
-
     #ifdef DYNAMIC_MACRO_ENABLE
         bool macro1;
+        bool macro1rec;
         bool macro2;
+        bool macro2rec;
         bool prevEnabled;
         uint8_t prevRGBmode;
 
         void render_dynamic_macro_status(){
             oled_set_cursor(1,2);
-            oled_write(PSTR("Macro1"), macro1);
+            macro1rec ? oled_write(PSTR("Macro1"), macro1) : oled_write(PSTR("      "),false);
             oled_set_cursor(1,3);
-            oled_write(PSTR("Macro2"), macro2);
+            macro2rec ? oled_write(PSTR("Macro2"), macro2) : oled_write(PSTR("      "),false);
         }
 
         //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
@@ -113,13 +98,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             switch(direction){
                 case 1:
                     macro1 = false;
+                    macro1rec = true;
                     break;
                 case -1:
                     macro2 = false;
+                    macro2rec = true;
                     break;
                 default:
                     macro1 = false;
                     macro2 = false;
+                    macro1rec = false;
+                    macro2rec = false;
                     break;
             }
         }
@@ -153,9 +142,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         oled_write(logo, false);
     }
 
-
     void render_keylock_status(led_t led_state) {
-        oled_write(PSTR("CAPS"), led_state.caps_lock);
+        bool caps_state = (led_state.caps_lock || is_caps_word_on());
+        oled_write(PSTR("CAPS"), caps_state);
         oled_write(PSTR(" "), false);
         oled_write(PSTR("NUM"), led_state.num_lock);
         oled_write(PSTR(" "), false);
@@ -163,14 +152,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         //oled_write_ln_P(PSTR(" "), false);
     }
 
+    os_variant_t current_platform;
+
     void render_mod_status(uint8_t modifiers) {
         oled_write(PSTR("SH"), (modifiers & MOD_MASK_SHIFT));
         oled_write(PSTR(" "), false);
-        oled_write(PSTR("GUI"), (modifiers & MOD_MASK_GUI));
+        (current_platform == OS_MACOS || current_platform == OS_IOS)  ? oled_write(PSTR("GUI"), (modifiers & MOD_MASK_GUI)) : oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL));
         oled_write(PSTR(" "), false);
         oled_write(PSTR("ALT"), (modifiers & MOD_MASK_ALT));
         oled_write(PSTR(" "), false);
-        oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL));
+        (current_platform == OS_MACOS || current_platform == OS_IOS) ? oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL)) : oled_write(PSTR("GUI"), (modifiers & MOD_MASK_GUI));
     }
 
     void render_key_status_or_logo(){
@@ -186,7 +177,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 oled_render();
                 clear_screen = false;
             }
-
             oled_set_cursor(8,0);
             render_keylock_status(led_state);
             oled_set_cursor(8,1);
@@ -194,7 +184,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         }
     }
 
-    void render_layer_status(){
+    void render_current_layer(){
         switch (get_highest_layer(layer_state)) {
                 case 0:
                     oled_write(PSTR("Layer 0"), false);
@@ -214,62 +204,81 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     }
 
     void render_current_wpm(){
-        char wpm_str[10];
-        sprintf(wpm_str, "WPM: %03d", get_current_wpm());
-        oled_write(PSTR(wpm_str), false);
+        oled_write_P(PSTR("WPM: "), false);
+        oled_write(get_u8_str(get_current_wpm(), '0'), false);
     }
 
-    void render_bootmagic_status(int col, int line) {
+    void render_platform_status(int col, int line) {
         /* Show Ctrl-Gui Swap options */
-        static const char PROGMEM logo[][4][3] = {
+        static const char PROGMEM logo[][5][3] = {
             {{0x9B, 0x9C, 0}, {0xbb, 0xbc, 0}}, //Android
             {{0x99, 0x9A, 0}, {0xb9, 0xba, 0}}, //Linux
             {{0x97, 0x98, 0}, {0xb7, 0xb8, 0}}, //Windows
-            {{0x95, 0x96, 0}, {0xb5, 0xb6, 0}}, //Mac / Banana with default oled driver
+            {{0x95, 0x96, 0}, {0xb5, 0xb6, 0}}, //Mac/iOS
+            {{0x9D, 0x9E, 0}, {0xbd, 0xbe, 0}}, //Empty Placeholder
         };
-        switch (get_bootmagic_status()) {
-                case _ANDROID:
+        current_platform = detected_host_os();
+        switch (current_platform) {
+                /*case OS_ANDROID: //Android
                     oled_set_cursor(col,line);
                     oled_write(logo[0][0], false);
                     oled_set_cursor(col,line+1);
                     oled_write(logo[0][1], false);
-                    break;
-                case _LINUX:
+                    break;*/
+                case OS_LINUX: //Linux
                     oled_set_cursor(col,line);
                     oled_write(logo[1][0], false);
                     oled_set_cursor(col,line+1);
                     oled_write(logo[1][1], false);
+                    keymap_config.swap_lctl_lgui = false;
+                    keymap_config.swap_rctl_rgui = false;
                     break;
-                case _WINDOWS:
+                case OS_WINDOWS: //Windows
                     oled_set_cursor(col,line);
                     oled_write(logo[2][0], false);
                     oled_set_cursor(col,line+1);
                     oled_write(logo[2][1], false);
+                    keymap_config.swap_lctl_lgui = false;
+                    keymap_config.swap_rctl_rgui = false;
                     break;
-                case _MAC:
+                case OS_MACOS: //Mac
                     oled_set_cursor(col,line);
                     oled_write(logo[3][0], false);
                     oled_set_cursor(col,line+1);
                     oled_write(logo[3][1], false);
+                    keymap_config.swap_lctl_lgui = true;
+                    keymap_config.swap_rctl_rgui = true;
                     break;
-                default:
-                    oled_write(PSTR("Bootmagic ?"), false);    // Should never display, here as a catchall
+                case OS_IOS: //iOS
+                    oled_set_cursor(col,line);
+                    oled_write(logo[3][0], false);
+                    oled_set_cursor(col,line+1);
+                    oled_write(logo[3][1], false);
+                    keymap_config.swap_lctl_lgui = true;
+                    keymap_config.swap_rctl_rgui = true;
+                    break;
+                default: //OS_UNSURE or not configured
+                    oled_set_cursor(col,line);
+                    oled_write(logo[4][0], false);
+                    oled_set_cursor(col,line+1);
+                    oled_write(logo[4][1], false);
+                    break;
         }
     }
 
     bool oled_task_user(void) {
         render_key_status_or_logo();
         oled_set_cursor(8,2);
-        render_layer_status();
+        render_current_layer();
         oled_set_cursor(8,3);
         render_current_wpm();
-        #ifdef BOOTMAGIC_ENABLE
-            render_bootmagic_status(20,2);
-        #endif
+        render_platform_status(18,2);
         oled_set_cursor(8,2);
         #ifdef DYNAMIC_MACRO_ENABLE
             render_dynamic_macro_status();
         #endif
+
+        return false;
     }
 
 #endif
