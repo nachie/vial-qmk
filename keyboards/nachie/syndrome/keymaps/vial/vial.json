@@ -2,6 +2,28 @@
   "name": "Syndrome",
   "vendorId": "0x4B43",
   "productId": "0x5359",
+  "customKeycodes": [
+        {
+            "name": "JmpWordL",
+            "title": "Jump Word Left",
+            "shortName": "J_WORDL"
+        },
+        {
+            "name": "JmpWordR",
+            "title": "Jump Word Right",
+            "shortName": "J_WORDR"
+        },
+        {
+            "name": "SlcWordL",
+            "title": "Select Word Left",
+            "shortName": "S_WORDL"
+        },
+        {
+            "name": "SlcWordR",
+            "title": "Select Word Right",
+            "shortName": "S_WORDR"
+        }
+  ],
   "matrix": { "rows": 10, "cols": 8 },
   "lighting": "vialrgb",
   "layouts": {

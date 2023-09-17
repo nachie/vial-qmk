@@ -27,6 +27,91 @@ enum layer_names {
     _FN3 // Fn Layer 3
 };
 
+enum custom_keycode {
+    J_WORDL = QK_KB_0,
+    J_WORDR,
+    S_WORDL,
+    S_WORDR
+};
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case KC_HOME:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LGUI);
+                tap_code(KC_LEFT);
+                unregister_mods(MOD_LGUI);
+            } else {
+                tap_code(KC_HOME);
+            }
+            break;
+        case KC_END:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LGUI);
+                tap_code(KC_RIGHT);
+                unregister_mods(MOD_LGUI);
+            } else {
+                tap_code(KC_END);
+            }
+            break;
+        case KC_PGUP:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LGUI);
+                tap_code(KC_UP);
+                unregister_mods(MOD_LGUI);
+            } else {
+                tap_code(KC_PGUP);
+            }
+            break;
+        case KC_PGDN:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LGUI);
+                tap_code(KC_DOWN);
+                unregister_mods(MOD_LGUI);
+            } else {
+                tap_code(KC_PGDN);
+            }
+            break;
+        case J_WORDL:
+            if (record->event.pressed) {
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                tap_code(KC_LEFT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+            } else {
+            }
+            break;
+        case J_WORDR:
+            if (record->event.pressed) {
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                tap_code(KC_RIGHT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+            } else {
+            }
+            break;
+        case S_WORDL:
+            if (record->event.pressed) {
+                register_mods(MOD_LSFT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                tap_code(KC_LEFT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                unregister_mods(MOD_LSFT);
+            } else {
+            }
+            break;
+        case S_WORDR:
+            if (record->event.pressed) {
+                register_mods(MOD_LSFT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                tap_code(KC_RIGHT);
+                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                unregister_mods(MOD_LSFT);
+            } else {
+            }
+            break;
+    }
+    return true;
+};
+
 #ifndef HAPTIC_ENABLE
     #define HF_TOGG _______
 #endif
@@ -272,7 +357,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         render_current_layer();
         oled_set_cursor(8,3);
         render_current_wpm();
-        render_platform_status(18,2);
+        #ifdef OS_DETECTION_ENABLE
+            render_platform_status(18,2);
+        #endif
         oled_set_cursor(8,2);
         #ifdef DYNAMIC_MACRO_ENABLE
             render_dynamic_macro_status();
