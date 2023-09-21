@@ -6,22 +6,42 @@
         {
             "name": "JmpWordL",
             "title": "Jump Word Left",
-            "shortName": "J_WORDL"
+            "shortName": "JWRDL"
         },
         {
             "name": "JmpWordR",
             "title": "Jump Word Right",
-            "shortName": "J_WORDR"
+            "shortName": "JWRDR"
         },
         {
             "name": "SlcWordL",
             "title": "Select Word Left",
-            "shortName": "S_WORDL"
+            "shortName": "SWRDL"
         },
         {
             "name": "SlcWordR",
             "title": "Select Word Right",
-            "shortName": "S_WORDR"
+            "shortName": "SWRDR"
+        },
+        {
+            "name": "TabLft",
+            "title": "Tab Left",
+            "shortName": "TABL"
+        },
+        {
+            "name": "TabRght",
+            "title": "Tab Right",
+            "shortName": "TABR"
+        },
+        {
+            "name": "DsktpLft",
+            "title": "Desktop Left",
+            "shortName": "DSKTPL"
+        },
+        {
+            "name": "DsktpRght",
+            "title": "Desktop Right",
+            "shortName": "DSKTPR"
         }
   ],
   "matrix": { "rows": 10, "cols": 8 },

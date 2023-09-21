@@ -40,7 +40,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define I2C_DRIVER I2CD1
 #define I2C1_SDA_PIN GP10
 #define I2C1_SCL_PIN GP11
-#define OLED_TIMEOUT 60000       // Turns off the OLED screen after x ms of keyboard inactivity. Helps reduce OLED Burn-in. Set to 0 to disable.
+#define OLED_TIMEOUT 60000       // Turns off the OLED screen after x ms of screen update inactivity. Helps reduce OLED Burn-in. Set to 0 to disable.
+#define OLED_FADE_OUT
+#define OLED_FADE_OUT_INTERVAL 13
 #define OLED_BRIGHTNESS 50       // The default brightness level of the OLED, from 0 to 255.
 #define OLED_UPDATE_INTERVAL 16  // limits in milliseconds how frequently the OLED updates. Calculation 1000/fps (increases keyboard responsiveness)
 #endif

@@ -28,10 +28,14 @@ enum layer_names {
 };
 
 enum custom_keycode {
-    J_WORDL = QK_KB_0,
-    J_WORDR,
-    S_WORDL,
-    S_WORDR
+    JWRDL = QK_KB_0,
+    JWRDR,
+    SWRDL,
+    SWRDR,
+    TABL,
+    TABR,
+    DSKTPL,
+    DSKTPR
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -72,7 +76,36 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 tap_code(KC_PGDN);
             }
             break;
-        case J_WORDL:
+        case KC_NUM_LOCK:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LSFT);
+                tap_code(KC_CLEAR);
+                unregister_mods(MOD_LSFT);
+            } else {
+                tap_code(KC_NUM_LOCK);
+            }
+            break;
+        case KC_SCROLL_LOCK:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LCTL);
+                tap_code(KC_F14);
+                unregister_mods(MOD_LCTL);
+            } else {
+                tap_code(KC_SCROLL_LOCK);
+            }
+            break;
+        case KC_PRINT_SCREEN:
+            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+                register_mods(MOD_LSFT);
+                register_mods(MOD_LGUI);
+                tap_code(KC_5);
+                unregister_mods(MOD_LGUI);
+                unregister_mods(MOD_LSFT);
+            } else {
+                tap_code(KC_PRINT_SCREEN);
+            }
+            break;
+        case JWRDL:
             if (record->event.pressed) {
                 (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_LEFT);
@@ -80,7 +113,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
             }
             break;
-        case J_WORDR:
+        case JWRDR:
             if (record->event.pressed) {
                 (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_RIGHT);
@@ -88,7 +121,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
             }
             break;
-        case S_WORDL:
+        case SWRDL:
             if (record->event.pressed) {
                 register_mods(MOD_LSFT);
                 (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
@@ -98,13 +131,51 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
             }
             break;
-        case S_WORDR:
+        case SWRDR:
             if (record->event.pressed) {
                 register_mods(MOD_LSFT);
                 (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_RIGHT);
                 (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
                 unregister_mods(MOD_LSFT);
+            } else {
+            }
+            break;
+        case TABL:
+            if (record->event.pressed) {
+                register_mods(MOD_LCTL);
+                register_mods(MOD_LSFT);
+                tap_code(KC_TAB);
+                unregister_mods(MOD_LSFT);
+                unregister_mods(MOD_LCTL);
+            } else {
+            }
+            break;
+        case TABR:
+            if (record->event.pressed) {
+                register_mods(MOD_LCTL);
+                tap_code(KC_TAB);
+                unregister_mods(MOD_LCTL);
+            } else {
+            }
+            break;
+        case DSKTPL:
+            if (record->event.pressed) {
+                register_mods(MOD_LCTL);
+                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { register_mods(MOD_LGUI); }
+                tap_code(KC_LEFT);
+                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { unregister_mods(MOD_LGUI); }
+                unregister_mods(MOD_LCTL);
+            } else {
+            }
+            break;
+        case DSKTPR:
+            if (record->event.pressed) {
+                register_mods(MOD_LCTL);
+                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { register_mods(MOD_LGUI); }
+                tap_code(KC_RGHT);
+                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { unregister_mods(MOD_LGUI); }
+                unregister_mods(MOD_LCTL);
             } else {
             }
             break;
@@ -167,11 +238,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         bool prevEnabled;
         uint8_t prevRGBmode;
 
-        void render_dynamic_macro_status(){
-            oled_set_cursor(1,2);
-            macro1rec ? oled_write(PSTR("Macro1"), macro1) : oled_write(PSTR("      "),false);
-            oled_set_cursor(1,3);
-            macro2rec ? oled_write(PSTR("Macro2"), macro2) : oled_write(PSTR("      "),false);
+        void render_dynamic_macro_status(int col, int line){
+            oled_set_cursor(col,line);
+            macro1rec ? oled_write(PSTR("DM1"), macro1) : oled_write(PSTR("      "),false);
+            oled_set_cursor(col,line+1);
+            macro2rec ? oled_write(PSTR("DM2"), macro2) : oled_write(PSTR("      "),false);
         }
 
         //direction indicates which macro it is, with 1 being Macro 1, -1 being Macro 2, and 0 being no macro.
@@ -216,6 +287,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     #endif
 
     bool clear_screen = false;
+    bool rerender_platform = false;
 
     static void render_logo(void) {
         static const char PROGMEM logo[] = {
@@ -242,9 +314,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     void render_mod_status(uint8_t modifiers) {
         oled_write(PSTR("SH"), (modifiers & MOD_MASK_SHIFT));
         oled_write(PSTR(" "), false);
-        (current_platform == OS_MACOS || current_platform == OS_IOS)  ? oled_write(PSTR("GUI"), (modifiers & MOD_MASK_GUI)) : oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL));
+        (current_platform == OS_MACOS || current_platform == OS_IOS)  ? oled_write(PSTR("CMD"), (modifiers & MOD_MASK_GUI)) : oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL));
         oled_write(PSTR(" "), false);
-        oled_write(PSTR("ALT"), (modifiers & MOD_MASK_ALT));
+        (current_platform == OS_MACOS || current_platform == OS_IOS) ? oled_write(PSTR("OPT"), (modifiers & MOD_MASK_ALT)) : oled_write(PSTR("ALT"), (modifiers & MOD_MASK_ALT));
         oled_write(PSTR(" "), false);
         (current_platform == OS_MACOS || current_platform == OS_IOS) ? oled_write(PSTR("CT"), (modifiers & MOD_MASK_CTRL)) : oled_write(PSTR("GUI"), (modifiers & MOD_MASK_GUI));
     }
@@ -254,7 +326,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         uint8_t mod_state = (get_mods()|get_oneshot_mods());
         if ( !led_state.num_lock && !led_state.caps_lock && !led_state.scroll_lock
         && !(mod_state & MOD_MASK_SHIFT) && !(mod_state & MOD_MASK_ALT) && !(mod_state & MOD_MASK_CTRL) && !(mod_state & MOD_MASK_GUI)) {
-            render_logo();
+            if(!clear_screen) {
+                render_logo();
+                rerender_platform = true;
+            }
             clear_screen = true;
         } else {
             if (clear_screen == true) {
@@ -266,7 +341,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             render_keylock_status(led_state);
             oled_set_cursor(8,1);
             render_mod_status(mod_state);
+            rerender_platform = true;
         }
+
     }
 
     void render_current_layer(){
@@ -304,65 +381,65 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         };
         current_platform = detected_host_os();
         switch (current_platform) {
-                /*case OS_ANDROID: //Android
-                    oled_set_cursor(col,line);
-                    oled_write(logo[0][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[0][1], false);
-                    break;*/
-                case OS_LINUX: //Linux
-                    oled_set_cursor(col,line);
-                    oled_write(logo[1][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[1][1], false);
-                    keymap_config.swap_lctl_lgui = false;
-                    keymap_config.swap_rctl_rgui = false;
-                    break;
-                case OS_WINDOWS: //Windows
-                    oled_set_cursor(col,line);
-                    oled_write(logo[2][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[2][1], false);
-                    keymap_config.swap_lctl_lgui = false;
-                    keymap_config.swap_rctl_rgui = false;
-                    break;
-                case OS_MACOS: //Mac
-                    oled_set_cursor(col,line);
-                    oled_write(logo[3][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[3][1], false);
-                    keymap_config.swap_lctl_lgui = true;
-                    keymap_config.swap_rctl_rgui = true;
-                    break;
-                case OS_IOS: //iOS
-                    oled_set_cursor(col,line);
-                    oled_write(logo[3][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[3][1], false);
-                    keymap_config.swap_lctl_lgui = true;
-                    keymap_config.swap_rctl_rgui = true;
-                    break;
-                default: //OS_UNSURE or not configured
-                    oled_set_cursor(col,line);
-                    oled_write(logo[4][0], false);
-                    oled_set_cursor(col,line+1);
-                    oled_write(logo[4][1], false);
-                    break;
+            /*case OS_ANDROID: //Android
+                oled_set_cursor(col,line);
+                oled_write(logo[0][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[0][1], false);
+                break;*/
+            case OS_LINUX: //Linux
+                oled_set_cursor(col,line);
+                oled_write(logo[1][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[1][1], false);
+                keymap_config.swap_lctl_lgui = false;
+                keymap_config.swap_rctl_rgui = false;
+                break;
+            case OS_WINDOWS: //Windows
+                oled_set_cursor(col,line);
+                oled_write(logo[2][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[2][1], false);
+                keymap_config.swap_lctl_lgui = false;
+                keymap_config.swap_rctl_rgui = false;
+                break;
+            case OS_MACOS: //Mac
+                oled_set_cursor(col,line);
+                oled_write(logo[3][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[3][1], false);
+                keymap_config.swap_lctl_lgui = true;
+                keymap_config.swap_rctl_rgui = true;
+                break;
+            case OS_IOS: //iOS
+                oled_set_cursor(col,line);
+                oled_write(logo[3][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[3][1], false);
+                keymap_config.swap_lctl_lgui = true;
+                keymap_config.swap_rctl_rgui = true;
+                break;
+            default: //OS_UNSURE or not configured
+                oled_set_cursor(col,line);
+                oled_write(logo[4][0], false);
+                oled_set_cursor(col,line+1);
+                oled_write(logo[4][1], false);
+                break;
         }
+        rerender_platform = false;
     }
 
     bool oled_task_user(void) {
         render_key_status_or_logo();
         oled_set_cursor(8,2);
         render_current_layer();
+        #ifdef DYNAMIC_MACRO_ENABLE
+            render_dynamic_macro_status(18,2);
+        #endif
         oled_set_cursor(8,3);
         render_current_wpm();
         #ifdef OS_DETECTION_ENABLE
-            render_platform_status(18,2);
-        #endif
-        oled_set_cursor(8,2);
-        #ifdef DYNAMIC_MACRO_ENABLE
-            render_dynamic_macro_status();
+            if(current_platform != detected_host_os() || rerender_platform) { render_platform_status(3,0); }
         #endif
 
         return false;
