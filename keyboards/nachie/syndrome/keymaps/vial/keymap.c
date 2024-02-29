@@ -20,6 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "os_detection.h"
 #include "magic.h"
 
+os_variant_t current_platform;
+bool is_alt_tab_active = false;
+uint16_t alt_tab_timer = 0;
+
 enum layer_names {
     _BASE, // Default Layer
     _FN, // Fn Layer 1
@@ -35,13 +39,15 @@ enum custom_keycode {
     TABL,
     TABR,
     DSKTPL,
-    DSKTPR
+    DSKTPR,
+    PRVAPP,
+    NXTAPP
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_HOME:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LGUI);
                 tap_code(KC_LEFT);
                 unregister_mods(MOD_LGUI);
@@ -50,7 +56,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_END:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LGUI);
                 tap_code(KC_RIGHT);
                 unregister_mods(MOD_LGUI);
@@ -59,7 +65,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_PGUP:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LGUI);
                 tap_code(KC_UP);
                 unregister_mods(MOD_LGUI);
@@ -68,7 +74,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_PGDN:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LGUI);
                 tap_code(KC_DOWN);
                 unregister_mods(MOD_LGUI);
@@ -77,7 +83,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_NUM_LOCK:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LSFT);
                 tap_code(KC_CLEAR);
                 unregister_mods(MOD_LSFT);
@@ -86,7 +92,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_SCROLL_LOCK:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LCTL);
                 tap_code(KC_F14);
                 unregister_mods(MOD_LCTL);
@@ -95,7 +101,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_PRINT_SCREEN:
-            if (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) {
+            if (record->event.pressed && current_platform == OS_MACOS) {
                 register_mods(MOD_LSFT);
                 register_mods(MOD_LGUI);
                 tap_code(KC_5);
@@ -107,26 +113,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case JWRDL:
             if (record->event.pressed) {
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_LEFT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
             } else {
             }
             break;
         case JWRDR:
             if (record->event.pressed) {
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_RIGHT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
             } else {
             }
             break;
         case SWRDL:
             if (record->event.pressed) {
                 register_mods(MOD_LSFT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_LEFT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
                 unregister_mods(MOD_LSFT);
             } else {
             }
@@ -134,9 +140,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case SWRDR:
             if (record->event.pressed) {
                 register_mods(MOD_LSFT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? register_mods(MOD_LALT) : register_mods(MOD_LCTL);
                 tap_code(KC_RIGHT);
-                (keymap_config.swap_lctl_lgui && keymap_config.swap_rctl_rgui) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
+                (current_platform == OS_MACOS) ? unregister_mods(MOD_LALT) : unregister_mods(MOD_LCTL);
                 unregister_mods(MOD_LSFT);
             } else {
             }
@@ -162,9 +168,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case DSKTPL:
             if (record->event.pressed) {
                 register_mods(MOD_LCTL);
-                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { register_mods(MOD_LGUI); }
-                tap_code(KC_LEFT);
-                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { unregister_mods(MOD_LGUI); }
+                register_mods(MOD_LGUI);
+                (current_platform == OS_LINUX) ? tap_code(KC_UP) : tap_code(KC_LEFT);
+                unregister_mods(MOD_LGUI);
                 unregister_mods(MOD_LCTL);
             } else {
             }
@@ -172,11 +178,37 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case DSKTPR:
             if (record->event.pressed) {
                 register_mods(MOD_LCTL);
-                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { register_mods(MOD_LGUI); }
-                tap_code(KC_RGHT);
-                if (!keymap_config.swap_lctl_lgui && !keymap_config.swap_rctl_rgui) { unregister_mods(MOD_LGUI); }
+                register_mods(MOD_LGUI);
+                (current_platform == OS_LINUX) ? tap_code(KC_DOWN) : tap_code(KC_RGHT);
+                unregister_mods(MOD_LGUI);
                 unregister_mods(MOD_LCTL);
             } else {
+            }
+            break;
+        case PRVAPP:
+            if (record->event.pressed) {
+                register_code(KC_LSFT);
+                if (!is_alt_tab_active) {
+                    is_alt_tab_active = true;
+                    (current_platform == OS_MACOS) ? register_code(KC_LGUI) : register_code(KC_LALT);
+                }
+                alt_tab_timer = timer_read();
+                register_code(KC_TAB);
+            } else {
+                unregister_code(KC_TAB);
+                unregister_code(KC_LSFT);
+            }
+            break;
+        case NXTAPP:
+            if (record->event.pressed) {
+                if (!is_alt_tab_active) {
+                    is_alt_tab_active = true;
+                    (current_platform == OS_MACOS) ? register_code(KC_LGUI) : register_code(KC_LALT);
+                }
+                alt_tab_timer = timer_read();
+                register_code(KC_TAB);
+            } else {
+                unregister_code(KC_TAB);
             }
             break;
     }
@@ -219,6 +251,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		_______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 		_______, _______, _______, _______, _______, _______, _______, _______)
 };
+
+void matrix_scan_user(void) { // The very important timer.
+    if (is_alt_tab_active) {
+        if (timer_elapsed(alt_tab_timer) > 1000) {
+            (current_platform == OS_MACOS) ? unregister_code(KC_LGUI) : unregister_code(KC_LALT);
+            is_alt_tab_active = false;
+        }
+    }
+}
 
 #if defined(ENCODER_MAP_ENABLE)
     const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
@@ -308,8 +349,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         oled_write(PSTR("SCRL"), led_state.scroll_lock);
         //oled_write_ln_P(PSTR(" "), false);
     }
-
-    os_variant_t current_platform;
 
     void render_mod_status(uint8_t modifiers) {
         oled_write(PSTR("SH"), (modifiers & MOD_MASK_SHIFT));

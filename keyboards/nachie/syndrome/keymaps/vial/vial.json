@@ -42,6 +42,16 @@
             "name": "DsktpRght",
             "title": "Desktop Right",
             "shortName": "DSKTPR"
+        },
+        {
+            "name": "PrevApp",
+            "title": "Previous App",
+            "shortName": "PRVAPP"
+        },
+        {
+            "name": "NextApp",
+            "title": "Next App",
+            "shortName": "NXTAPP"
         }
   ],
   "matrix": { "rows": 10, "cols": 8 },
